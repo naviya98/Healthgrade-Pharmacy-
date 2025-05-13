@@ -1,0 +1,152 @@
+-- HealthgradePharmacy.lk Database Structure
+-- Created: May 14, 2025
+
+-- Drop database if exists (comment out in production)
+DROP DATABASE IF EXISTS healthgradepharmacy;
+
+-- Create database
+CREATE DATABASE healthgradepharmacy;
+USE healthgradepharmacy;
+
+-- Create Users table for admin access
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    full_name VARCHAR(100) NOT NULL,
+    role ENUM('admin', 'manager') NOT NULL DEFAULT 'manager',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Create Categories table for product organization
+CREATE TABLE categories (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    image VARCHAR(255),
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Create Products table for product showcase
+CREATE TABLE products (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    category_id INT,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    image VARCHAR(255),
+    price DECIMAL(10, 2),
+    discount_price DECIMAL(10, 2),
+    is_featured BOOLEAN DEFAULT FALSE,
+    is_new BOOLEAN DEFAULT FALSE,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
+);
+
+-- Create Appointments table for booking system
+CREATE TABLE appointments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100),
+    phone VARCHAR(20) NOT NULL,
+    date DATE NOT NULL,
+    time TIME NOT NULL,
+    service_type ENUM('Consultation', 'Medicine Pickup', 'Health Checkup', 'Other') NOT NULL,
+    message TEXT,
+    status ENUM('Pending', 'Confirmed', 'Completed', 'Cancelled') DEFAULT 'Pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Create Delivery Areas table
+CREATE TABLE delivery_areas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    area_name VARCHAR(100) NOT NULL,
+    delivery_fee DECIMAL(10, 2) NOT NULL,
+    estimated_time VARCHAR(50) NOT NULL, -- e.g., "30-45 minutes"
+    is_available BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Create Contact Messages table for contact form
+CREATE TABLE contact_messages (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    phone VARCHAR(20),
+    subject VARCHAR(255),
+    message TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Create Settings table for site configuration
+CREATE TABLE settings (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    setting_key VARCHAR(100) NOT NULL UNIQUE,
+    setting_value TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Insert default admin user
+INSERT INTO users (username, password, email, full_name, role) VALUES
+('admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin@healthgradepharmacy.lk', 'Admin User', 'admin'); -- Password: password
+
+-- Insert product categories
+INSERT INTO categories (name, description, image, is_active) VALUES
+('Prescription Medicines', 'All types of prescription medications available', 'prescription.jpg', TRUE),
+('Over-the-Counter', 'Medicines available without prescription', 'otc.jpg', TRUE),
+('Personal Care', 'Skincare, haircare and personal hygiene products', 'personal_care.jpg', TRUE),
+('Health Devices', 'Blood pressure monitors, thermometers, and more', 'devices.jpg', TRUE),
+('Vitamins & Supplements', 'Nutritional supplements and vitamins', 'vitamins.jpg', TRUE),
+('Baby Care', 'Products for babies and infants', 'baby_care.jpg', TRUE);
+
+-- Insert sample products
+INSERT INTO products (category_id, name, description, image, price, discount_price, is_featured, is_new, is_active) VALUES
+(1, 'Amoxicillin 500mg', 'Antibiotic for bacterial infections (Prescription Required)', 'amoxicillin.jpg', 550.00, NULL, FALSE, FALSE, TRUE),
+(1, 'Atorvastatin 20mg', 'For cholesterol management (Prescription Required)', 'atorvastatin.jpg', 650.00, 600.00, TRUE, FALSE, TRUE),
+(2, 'Paracetamol 500mg', 'For fever and pain relief', 'paracetamol.jpg', 150.00, NULL, TRUE, FALSE, TRUE),
+(2, 'Cetirizine 10mg', 'For allergy relief', 'cetirizine.jpg', 250.00, NULL, FALSE, TRUE, TRUE),
+(3, 'Moisturizing Cream', 'For dry skin - 100ml', 'moisturizer.jpg', 450.00, 400.00, TRUE, FALSE, TRUE),
+(3, 'Sunscreen SPF 50', 'Protection from harmful UV rays - 50ml', 'sunscreen.jpg', 1200.00, NULL, TRUE, TRUE, TRUE),
+(4, 'Digital Thermometer', 'Accurate temperature measurement', 'thermometer.jpg', 1500.00, 1350.00, FALSE, FALSE, TRUE),
+(4, 'Blood Pressure Monitor', 'For home blood pressure monitoring', 'bp_monitor.jpg', 6500.00, 6000.00, TRUE, FALSE, TRUE),
+(5, 'Vitamin C 1000mg', '30 tablets for immune support', 'vitamin_c.jpg', 750.00, NULL, FALSE, TRUE, TRUE),
+(5, 'Calcium + Vitamin D3', '60 tablets for bone health', 'calcium.jpg', 1200.00, 1050.00, TRUE, FALSE, TRUE),
+(6, 'Baby Diaper Pack', 'Pack of 20 diapers - Medium size', 'diapers.jpg', 1600.00, 1500.00, FALSE, TRUE, TRUE),
+(6, 'Baby Shampoo', 'Gentle formula - 200ml', 'baby_shampoo.jpg', 450.00, NULL, TRUE, FALSE, TRUE);
+
+-- Insert delivery areas
+INSERT INTO delivery_areas (area_name, delivery_fee, estimated_time, is_available) VALUES
+('Colombo 1-5', 200.00, '30-45 minutes', TRUE),
+('Colombo 6-10', 250.00, '45-60 minutes', TRUE),
+('Colombo 11-15', 300.00, '60-90 minutes', TRUE),
+('Gampaha', 400.00, '120-150 minutes', TRUE),
+('Kalutara', 500.00, '150-180 minutes', TRUE);
+
+-- Insert site settings
+INSERT INTO settings (setting_key, setting_value) VALUES
+('site_name', 'Healthgrade Pharmacy'),
+('contact_email', 'info@healthgradepharmacy.lk'),
+('contact_phone', '+94 112 456 789'),
+('whatsapp_number', '+94 712 345 678'),
+('address', 'No. 123, Main Street, Colombo 04, Sri Lanka'),
+('business_hours', 'Monday - Friday: 8:00 AM - 10:00 PM\nSaturday - Sunday: 9:00 AM - 9:00 PM'),
+('about_us', 'Healthgrade Pharmacy has been serving the Sri Lankan community for over 10 years with quality pharmaceutical products and exceptional healthcare services.'),
+('delivery_info', 'We deliver medications and healthcare products to your doorstep. Orders placed before 4 PM are usually delivered on the same day.'),
+('facebook_url', 'https://facebook.com/healthgradepharmacy'),
+('instagram_url', 'https://instagram.com/healthgradepharmacy'),
+('twitter_url', 'https://twitter.com/healthgradepharm'),
+('logo_path', 'assets/images/logo.png'),
+('favicon_path', 'assets/images/favicon.ico'),
+('enable_appointment', 'true'),
+('enable_whatsapp_order', 'true'),
+('meta_description', 'Healthgrade Pharmacy - Your trusted healthcare partner in Sri Lanka. Order medicines online and book appointments for consultations.');
